@@ -1,0 +1,159 @@
+1. UX/UI: Diseño de Interfaz y Flujo de RegistroFilosofía: "One-Hand Use" (Uso con una mano) y rapidez extrema.Pantalla Principal (Dashboard):Botones de Acción Rápida (Floating Action Buttons): Grandes y accesibles.Lógica del Timestamp:Click simple: Registra la hora actual (System.Time) automáticamente.Click largo o Edición posterior: Permite modificar la hora de inicio/fin manualmente (caso de uso: "se me olvidó registrarlo hace 1 hora").Selector de Tipo (Post-Click):Al pulsar "Toma", pregunta: ¿Pecho (I/D) o Biberón?Al pulsar "Pañal", pregunta: ¿Orina, Heces o Ambos?2. Módulos de Tracking y Parámetros MédicosA. Alimentación (Tomas)Datos a recoger:Pecho: Tiempo (minutos) por lado (Izquierdo/Derecho).Biberón: Cantidad (ml) y tipo (Leche Materna extraída / Fórmula).Métricas de Relevancia Pediátrica:Frecuencia: Rango normal 8-12 tomas/día (recién nacido).Alerta: Si pasan >4 horas sin comer (en las primeras semanas) $\rightarrow$ Notificación de advertencia (riesgo de hipoglucemia).Volumen total: Comparativa vs. peso del bebé (aprox. 150ml/kg/día como referencia general, ajustable por edad).B. SueñoDatos a recoger: Hora inicio, Hora fin, Calidad (opcional: tranquilo/inquieto).Métricas de Relevancia:Total horas sueño: Comparar con medias (ej. Recién nacido: 14-17h).Ventanas de sueño: Calcular tiempo despierto entre siestas para evitar el "sobrecansancio".C. Pañales (Excreción)Datos a recoger:Tipo: Orina, Heces, Ambos.Características (Selectores rápidos):Heces: Color (Mostaza, Verde, Negro/Meconio, Blanco/Arcilla, Rojo). Textura (Líquida, Pastosa, Dura).Lógica de Alerta Médica:Deshidratación: Menos de 4-6 pañales mojados en 24h.Colores de Alerta: Blanco (acolia - hígado), Rojo (sangre), Negro (tardío - posible sangrado digestivo, normal solo primeros 3 días).3. Módulo de Crecimiento (Curvas OMS)Este módulo compara los datos ingresados con los datasets oficiales de la Organización Mundial de la Salud (WHO Child Growth Standards).Datos de Referencia (Datasets a integrar)La app debe contener las tablas Z-Score (0 a 2 años) para Niños y Niñas de:Peso para la edad.Longitud (Altura) para la edad.Perímetro Cefálico (Cabeza) para la edad.Visualización e Interpretación (Semáforo)La app mostrará un gráfico lineal donde el eje X es la edad y el eje Y la medida.Zona Verde (Normal): Entre el Percentil 15 y el 85 (o entre -1 SD y +1 SD).Zona Amarilla (Seguimiento): Entre Percentil 3-15 o 85-97. Mensaje: "Vigilar evolución".Zona Roja (Alerta): Por debajo del Percentil 3 o por encima del 97. Mensaje: "Consultar con pediatra".Recordatorios de Medición (Calendario)Notificaciones automáticas para recordar a los padres medir al bebé, basadas en el calendario de "Niño Sano":Nacimiento (Día 0)Semana 1 y 2 (Recuperación del peso de nacimiento).1 Mes2 Meses (Coincide con vacunas).4 Meses6 Meses9 Meses12 Meses4. Gestión de Salud (Vacunas y Citas)VacunaciónBase de datos: Cargar calendario oficial (configurable por país).Input: Checkbox de "Puesta" + Fecha + Lote (opcional).Recordatorio: Alerta 1 semana y 1 día antes de la fecha prevista según edad.Citas MédicasAgenda simple sincronizada con las alertas de crecimiento.Campo de "Notas/Dudas": Para anotar preguntas para el pediatra antes de ir.5. Resumen de Alertas Inteligentes (Backend Logic)La app debe ejecutar un script diario para detectar anomalías:Condición DetectadaGravedadMensaje al UsuarioPérdida de peso >10% (1ª semana)🔴 Alta"Pérdida de peso significativa. Acudir a revisión."No recuperación peso nacimiento (Día 15)🟠 Media"Revisión de peso recomendada."< 5 Pañales de orina / 24h🔴 Alta"Posible deshidratación. Ofrecer tomas y vigilar."Heces color Blanco o Rojo🔴 Alta"ACUDIR A URGENCIAS PEDIÁTRICAS."Curva de crecimiento plana (2 meses sin subir)🟠 Media"Estancamiento de peso/talla detectado."Próximos pasos sugeridos para el desarrollo:Base de Datos: Descargar los .csv o .json oficiales de la OMS para integrarlos en el backend.Prototipado: Dibujar las pantallas de "Entrada rápida" (los botones grandes).Lógica: Programar el algoritmo que calcula el percentil exacto basado en la fecha de nacimiento
+
+1. ESTRUCTURA DE NAVEGACIÓN (Root)
+Utilizaremos un TabView clásico para facilitar la navegación con una sola mano.
+
+Tab 1: DashboardView (Registro rápido y Timeline).
+
+Tab 2: GrowthView (Gráficas OMS).
+
+Tab 3: HealthView (Vacunas y Citas).
+
+Tab 4: SettingsView (Perfiles y Exportación).
+
+2. DETALLE DE VISTAS (VIEWS SPECS)
+A. VISTA PRINCIPAL: DashboardView
+Objetivo: Registro inmediato (menos de 3 segundos) y visualización del estado actual.
+
+Header:
+
+Componente: HStack con Foto del bebé (Circular), Nombre y Edad calculada (ej: "2 meses, 3 días").
+
+Estado: Resumen de última actividad (ej: "Última toma: hace 2h 15m").
+
+Sección de Acciones Rápidas (Grid):
+
+Layout: LazyVGrid (2 columnas).
+
+Botones Grandes (Cards):
+
+🍼 Toma: Icono bottle.fill / drop.fill. Al pulsar abre FeedingSheet.
+
+💤 Sueño: Icono moon.zzz.fill. Botón con estado (Toggle). Si está durmiendo, el botón cambia de color y muestra un cronómetro activo.
+
+💩 Pañal: Icono toilet.fill. Abre DiaperSheet.
+
+📏 Medición: Icono ruler.fill. Abre MeasurementSheet.
+
+Timeline (Registro Diario):
+
+Componente: List o LazyVStack.
+
+Diseño: Estilo "Timeline" vertical. Icono a la izquierda, hora y detalle a la derecha.
+
+Interacción: Swipe to delete y Tap to edit.
+
+B. HOJAS DE REGISTRO (INPUT SHEETS)
+Estas vistas se presentan como .sheet (modal) sobre el Dashboard. Todas deben tener un DatePicker que por defecto marca Date.now, pero es editable.
+
+FeedingSheet (Toma):
+
+Segmented Control: [Pecho | Biberón].
+
+Si es Pecho: Dos Cronómetros grandes (Izq | Der) con botones Play/Pause independientes.
+
+Si es Biberón: Stepper o Slider para cantidad (ml/oz) y Toggle para "Leche Materna/Fórmula".
+
+Botón Guardar: Grande, en la parte inferior.
+
+DiaperSheet (Pañal):
+
+Selección Múltiple: Botones circulares para [Orina 💧] y [Heces 💩]. Pueden estar ambos activos.
+
+Si Heces está activo: Mostrar paleta de colores (Grid de círculos): Mostaza, Verde, Marrón, Negro, Rojo, Blanco.
+
+Textura: Picker [Líquida, Normal, Dura].
+
+SleepSheet (Edición manual):
+
+Solo si el usuario no usó el cronómetro en tiempo real.
+
+Selectores de Hora Inicio y Hora Fin.
+
+Calculadora automática de "Tiempo Total" visible mientras se editan las horas.
+
+C. VISTA DE CRECIMIENTO: GrowthView
+Objetivo: Comparativa visual con estándares OMS.
+
+Selector de Métrica: Picker [Peso, Altura, Perímetro Craneal].
+
+Gráfico Principal (Chart):
+
+Eje X: Edad (Meses).
+
+Eje Y: Kg / Cm.
+
+Capas (Z-Stack):
+
+Fondo (Area Mark): Dibujar franjas de colores suaves representando los percentiles de la OMS (P3, P15, P50, P85, P97).
+
+Línea de Usuario (Line Mark): Los datos del bebé con puntos (PointMark) en cada medición.
+
+Feedback Visual:
+
+Debajo del gráfico, una tarjeta de "Interpretación": "Percentil 55 (Normal)".
+
+Si el último punto está en zona roja, mostrar icono de alerta exclamationmark.triangle.fill.
+
+D. VISTA DE SALUD: HealthView
+Objetivo: Gestión administrativa médica.
+
+Segmented Control: [Vacunas | Citas].
+
+Lista de Vacunas:
+
+Iterar sobre un JSON local con el calendario oficial.
+
+Estado: Pendiente (Gris), Próxima (Amarillo), Puesta (Verde con Checkmark).
+
+Al tocar una vacuna: Abre detalle para poner fecha de administración y lote.
+
+Lista de Citas:
+
+Botón "+" para agregar nueva cita.
+
+Ordenadas cronológicamente.
+
+3. MODELADO DE DATOS (DATA MODELS)
+Para que la IA genere el código correctamente, dale estas definiciones de estructuras:
+
+Swift
+
+// Enum para tipos de eventos
+enum EventType: String, Codable {
+    case feeding, sleep, diaper, measurement, vaccine, doctorVisit
+}
+
+// Modelo principal de Evento
+struct TrackerEvent: Identifiable, Codable {
+    var id: UUID
+    var type: EventType
+    var startTime: Date
+    var endTime: Date? // Para sueño o tomas largas
+    var value: Double? // Cantidad ml, o peso kg, o talla cm
+    var subType: String? // "LeftBreast", "Formula", "Pee", "Poo"
+    var notes: String?
+    var metadata: [String: String]? // Para guardar color de heces o lote vacuna
+}
+
+// Modelo para la OMS (Para cargar el CSV/JSON)
+struct WHOStandard: Identifiable {
+    var id = UUID()
+    var month: Int
+    var p3: Double
+    var p15: Double
+    var p50: Double
+    var p85: Double
+    var p97: Double
+}
+4. INSTRUCCIONES PARA LA IA GENERADORA
+Copia y pega este prompt a tu IA de código para empezar:
+
+"Actúa como Senior iOS Developer. Basado en el plan de diseño anterior, quiero que empieces creando la estructura del proyecto en SwiftUI.
+
+Crea el Data Model (TrackerEvent) usando SwiftData (o CoreData).
+
+Crea el ViewModel principal (BabyTrackerViewModel) que maneje la lógica de añadir eventos, calcular tiempos de sueño y filtrar por día.
+
+Gérame el código de la DashboardView con los botones grandes y la lógica para que, al pulsar 'Sueño', inicie un timer visible en el botón, y al volver a pulsar, guarde el evento."
+

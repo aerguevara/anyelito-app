@@ -1,0 +1,30 @@
+# Xcode
+#
+# gitignore contributors: switch to the latest Xcode.gitignore template in
+# https://github.com/github/gitignore/blob/main/Global/Xcode.gitignore
+
+## Build results
+build/
+DerivedData/
+
+## Various settings
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+
+## Other
+*.moved-aside
+*.xccheckout
+*.xcscmblueprint
+
+## OS X
+.DS_Store
+
+## anyelito app artifacts
+build_output.txt
