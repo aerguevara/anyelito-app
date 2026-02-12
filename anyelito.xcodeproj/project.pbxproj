@@ -6,6 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DA8746102F362A6E004CBF58 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = DA87460F2F362A6E004CBF58 /* FirebaseAnalytics */; };
+		DA8746122F362A6E004CBF58 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = DA8746112F362A6E004CBF58 /* FirebaseAuth */; };
+		DA8746142F362A6E004CBF58 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = DA8746132F362A6E004CBF58 /* FirebaseCore */; };
+		DA8746162F362A6E004CBF58 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = DA8746152F362A6E004CBF58 /* FirebaseFirestore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		DA0A320F2F3277570058AFC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +59,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA8746102F362A6E004CBF58 /* FirebaseAnalytics in Frameworks */,
+				DA8746162F362A6E004CBF58 /* FirebaseFirestore in Frameworks */,
+				DA8746142F362A6E004CBF58 /* FirebaseCore in Frameworks */,
+				DA8746122F362A6E004CBF58 /* FirebaseAuth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +123,10 @@
 			);
 			name = anyelito;
 			packageProductDependencies = (
+				DA87460F2F362A6E004CBF58 /* FirebaseAnalytics */,
+				DA8746112F362A6E004CBF58 /* FirebaseAuth */,
+				DA8746132F362A6E004CBF58 /* FirebaseCore */,
+				DA8746152F362A6E004CBF58 /* FirebaseFirestore */,
 			);
 			productName = anyelito;
 			productReference = DA0A32012F3277550058AFC7 /* anyelito.app */;
@@ -195,6 +210,9 @@
 			);
 			mainGroup = DA0A31F82F3277550058AFC7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				DA87460E2F362A6E004CBF58 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DA0A32022F3277550058AFC7 /* Products */;
 			projectDirPath = "";
@@ -396,10 +414,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = SDRDXJM7RR;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -409,7 +428,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aerguevara.anyelito;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -428,10 +447,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = SDRDXJM7RR;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -441,7 +461,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aerguevara.anyelito;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -462,6 +482,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = SDRDXJM7RR;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aerguevara.anyelitoTests;
@@ -484,6 +505,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = SDRDXJM7RR;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aerguevara.anyelitoTests;
@@ -505,6 +527,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = SDRDXJM7RR;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aerguevara.anyelitoUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -525,6 +548,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = SDRDXJM7RR;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aerguevara.anyelitoUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -578,6 +602,40 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DA87460E2F362A6E004CBF58 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DA87460F2F362A6E004CBF58 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA87460E2F362A6E004CBF58 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		DA8746112F362A6E004CBF58 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA87460E2F362A6E004CBF58 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		DA8746132F362A6E004CBF58 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA87460E2F362A6E004CBF58 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		DA8746152F362A6E004CBF58 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA87460E2F362A6E004CBF58 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DA0A31F92F3277550058AFC7 /* Project object */;
 }

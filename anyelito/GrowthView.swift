@@ -211,7 +211,7 @@ struct GrowthView: View {
                         
                         Spacer()
                         
-                        Text(event.value?.formattedSpanish(decimals: selectedMetric == .weight ? 2 : 1) ?? "0")
+                        Text(event.value?.formattedSpanish(maxDecimals: selectedMetric == .weight ? 5 : 2) ?? "0")
                             .font(.system(.headline, design: .monospaced))
                             .foregroundColor(Theme.primaryGreen)
                         

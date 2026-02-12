@@ -1,15 +1,16 @@
 import SwiftUI
 
 struct Theme {
-    static let deepSpace = Color(hex: "050212")
-    static let primaryGreen = Color(hex: "00C853") // Vibrant Green
-    static let nebulaGreen = Color(hex: "004D40") // Dark Teal/Green
-    static let nebulaMint = Color(hex: "64FFDA") // Mint
-    static let starWhite = Color(hex: "FFFFFF")
-    static let secondaryWhite = Color.white.opacity(0.7)
-    static let tertiaryWhite = Color.white.opacity(0.4)
-    static let glassBackground = Color.white.opacity(0.12)
-    static let glassBorder = Color.white.opacity(0.18)
+    static let deepSpace = Color(hex: "08120A") // Darker green-tinted space
+    static let primaryGreen = Color(hex: "34D399") // Softer Emerald/Mint
+    static let nebulaGreen = Color(hex: "064E3B") // Dark Sage
+    static let nebulaMint = Color(hex: "D1FAE5") // Very Light Mint
+    static let nebulaSage = Color(hex: "A7F3D0") // Soft Sage
+    static let starWhite = Color(hex: "F0FDF4") // Minty White
+    static let secondaryWhite = Color.white.opacity(0.6)
+    static let tertiaryWhite = Color.white.opacity(0.3)
+    static let glassBackground = Color.white.opacity(0.04)
+    static let glassBorder = Color.white.opacity(0.08)
 }
 
 struct NebulaBackground: View {
@@ -21,18 +22,22 @@ struct NebulaBackground: View {
                 .ignoresSafeArea()
             
             // Nebula layers
-            RadialGradient(colors: [Theme.nebulaGreen.opacity(0.4), .clear], center: animate ? .topLeading : .bottomTrailing, startRadius: 100, endRadius: 600)
+            RadialGradient(colors: [Theme.nebulaGreen.opacity(0.3), .clear], center: animate ? .topLeading : .bottomTrailing, startRadius: 100, endRadius: 600)
                 .blur(radius: 50)
                 .ignoresSafeArea()
             
-            RadialGradient(colors: [Theme.nebulaMint.opacity(0.2), .clear], center: animate ? .bottomTrailing : .topLeading, startRadius: 100, endRadius: 700)
+            RadialGradient(colors: [Theme.nebulaSage.opacity(0.2), .clear], center: animate ? .bottomTrailing : .topLeading, startRadius: 100, endRadius: 700)
                 .blur(radius: 60)
+                .ignoresSafeArea()
+            
+            RadialGradient(colors: [Theme.nebulaMint.opacity(0.15), .clear], center: .center, startRadius: 0, endRadius: 500)
+                .blur(radius: 40)
                 .ignoresSafeArea()
             
             // Stars
             TimelineView(.animation) { timeline in
                 Canvas { context, size in
-                    for i in 0..<50 {
+                    for _ in 0..<50 {
                         let x = CGFloat.random(in: 0...size.width)
                         let y = CGFloat.random(in: 0...size.height)
                         let opacity = CGFloat.random(in: 0.1...0.8)
@@ -58,9 +63,9 @@ struct GlassModifier: ViewModifier {
             .padding()
             .background(.ultraThinMaterial)
             .background(Theme.glassBackground)
-            .cornerRadius(24)
+            .cornerRadius(32)
             .overlay(
-                RoundedRectangle(cornerRadius: 24)
+                RoundedRectangle(cornerRadius: 32)
                     .stroke(Theme.glassBorder, lineWidth: 1)
             )
             .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
@@ -101,12 +106,12 @@ extension Color {
 
 // Spanish format helper
 extension Double {
-    func formattedSpanish(decimals: Int = 1) -> String {
+    func formattedSpanish(maxDecimals: Int = 8) -> String {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "es_ES")
         formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = decimals
-        formatter.maximumFractionDigits = decimals
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = maxDecimals
         return formatter.string(from: NSNumber(value: self)) ?? "\(self)"
     }
 }

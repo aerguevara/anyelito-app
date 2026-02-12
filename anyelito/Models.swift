@@ -3,20 +3,24 @@ import SwiftData
 
 @Model
 final class BabyProfile {
+    @Attribute(.unique) var id: UUID
     var name: String
     var birthDate: Date
     var birthWeight: Double? // In kg
     var birthHeight: Double? // In cm
     var birthHeadCircumference: Double? // In cm
     var image: Data?
+    var sharingID: String?
     
-    init(name: String, birthDate: Date, birthWeight: Double? = nil, birthHeight: Double? = nil, birthHeadCircumference: Double? = nil, image: Data? = nil) {
+    init(id: UUID = UUID(), name: String, birthDate: Date, birthWeight: Double? = nil, birthHeight: Double? = nil, birthHeadCircumference: Double? = nil, image: Data? = nil, sharingID: String? = nil) {
+        self.id = id
         self.name = name
         self.birthDate = birthDate
         self.birthWeight = birthWeight
         self.birthHeight = birthHeight
         self.birthHeadCircumference = birthHeadCircumference
         self.image = image
+        self.sharingID = sharingID
     }
 }
 

@@ -41,9 +41,13 @@ struct FeedingSheet: View {
                     
                     if useDuration {
                         HStack {
-                            Text("\(Int(durationMinutes)) min")
+                            Text("Duración (min)")
+                            Spacer()
+                            TextField("0", value: $durationMinutes, format: .number)
+                                .keyboardType(.decimalPad)
+                                .multilineTextAlignment(.trailing)
                                 .font(.system(.body, design: .monospaced))
-                            Slider(value: $durationMinutes, in: 1...60, step: 1)
+                                .frame(width: 80)
                         }
                     } else {
                         DatePicker("Fin", selection: $endTime)
@@ -62,9 +66,13 @@ struct FeedingSheet: View {
                 } else {
                     Section("Cantidad") {
                         HStack {
-                            Text("\(Int(quantity)) ml")
+                            Text("Cantidad (ml)")
+                            Spacer()
+                            TextField("0", value: $quantity, format: .number)
+                                .keyboardType(.decimalPad)
+                                .multilineTextAlignment(.trailing)
                                 .font(.system(.body, design: .monospaced))
-                            Slider(value: $quantity, in: 0...300, step: 10)
+                                .frame(width: 80)
                         }
                         
                         Toggle("Leche Materna", isOn: $isLM)
@@ -91,7 +99,7 @@ struct FeedingSheet: View {
     }
     
     private func saveFeeding() {
-        let finalEndTime = useDuration ? Calendar.current.date(byAdding: .minute, value: Int(durationMinutes), to: startTime)! : endTime
+        let finalEndTime = useDuration ? Calendar.current.date(byAdding: .second, value: Int(durationMinutes * 60), to: startTime)! : endTime
         let subType = feedingType == .breast ? "Pecho (\(breastSide.rawValue))" : (isLM ? "Biberón (LM)" : "Biberón (Fórmula)")
         
         let event = TrackerEvent(

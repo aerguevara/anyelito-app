@@ -18,6 +18,8 @@ struct SettingsView: View {
     @State private var isEditing: Bool = false
     @State private var showingSaveAlert: Bool = false
     @State private var showingImportPicker: Bool = false
+    @State private var showingDeleteAlert: Bool = false
+    @State private var joinCode: String = ""
     
     var body: some View {
         NavigationStack {
@@ -88,6 +90,25 @@ struct SettingsView: View {
                                 .foregroundColor(Theme.starWhite)
                             
                             VStack(spacing: 0) {
+                                if let profile = viewModel.profiles.first, let sharingID = profile.sharingID {
+                                    HStack {
+                                        SettingsRow(title: "Código de Compartir", icon: "shareplay", color: Theme.primaryGreen)
+                                        Text(sharingID)
+                                            .font(.system(.body, design: .monospaced))
+                                            .foregroundColor(Theme.starWhite)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(Theme.glassBackground)
+                                            .cornerRadius(6)
+                                            .onTapGesture {
+                                                UIPasteboard.general.string = sharingID
+                                            }
+                                    }
+                                    .padding(.trailing, 10)
+                                    
+                                    Divider().background(Theme.glassBorder).padding(.vertical, 8)
+                                }
+                                
                                 Button {
                                     let csv = DataTransferService.exportToCSV(events: viewModel.events)
                                     shareCSV(csv)
@@ -103,7 +124,44 @@ struct SettingsView: View {
                                 
                                 Divider().background(Theme.glassBorder).padding(.vertical, 8)
                                 
-                                SettingsRow(title: "Borrar Todo", icon: "trash", color: .red)
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("Unirse a un Bebé")
+                                        .font(.subheadline.bold())
+                                        .foregroundColor(Theme.secondaryWhite)
+                                    
+                                    HStack {
+                                        TextField("Ingresar código", text: $joinCode)
+                                            .textFieldStyle(.plain)
+                                            .foregroundColor(Theme.starWhite)
+                                            .padding(10)
+                                            .background(Color.white.opacity(0.08))
+                                            .cornerRadius(8)
+                                            .autocorrectionDisabled()
+                                            .textInputAutocapitalization(.characters)
+                                        
+                                        Button(action: { 
+                                            viewModel.joinBaby(with: joinCode)
+                                            joinCode = ""
+                                        }) {
+                                            Text("Unirse")
+                                                .font(.subheadline.bold())
+                                                .foregroundColor(.white)
+                                                .padding(.horizontal, 16)
+                                                .padding(.vertical, 10)
+                                                .background(Theme.primaryGreen)
+                                                .cornerRadius(8)
+                                        }
+                                        .disabled(joinCode.isEmpty)
+                                    }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                
+                                Divider().background(Theme.glassBorder).padding(.vertical, 8)
+                                
+                                Button(action: { showingDeleteAlert = true }) {
+                                    SettingsRow(title: "Borrar Todo", icon: "trash", color: .red)
+                                }
                             }
                             .glassStyle()
                         }
@@ -125,7 +183,7 @@ struct SettingsView: View {
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarBackground(.hidden, for: .navigationBar)
             .onAppear { loadExistingData() }
-            .onChange(of: selectedItem) { newItem in
+            .onChange(of: selectedItem) { _, newItem in
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self) {
                         imageData = data
@@ -147,6 +205,14 @@ struct SettingsView: View {
                 Button("OK", role: .cancel) { isEditing = false }
             } message: {
                 Text("Los datos del bebé se han actualizado correctamente.")
+            }
+            .alert("¿Borrar todo?", isPresented: $showingDeleteAlert) {
+                Button("Cancelar", role: .cancel) { }
+                Button("Borrar Todo", role: .destructive) {
+                    viewModel.deleteAllData()
+                }
+            } message: {
+                Text("Esta acción eliminará todos los registros y el perfil del bebé. No se puede deshacer.")
             }
         }
     }
@@ -177,9 +243,9 @@ struct SettingsView: View {
         if let profile = viewModel.profiles.first {
             babyName = profile.name
             birthDate = profile.birthDate
-            weightBirth = profile.birthWeight?.formattedSpanish() ?? ""
-            heightBirth = profile.birthHeight?.formattedSpanish() ?? ""
-            headBirth = profile.birthHeadCircumference?.formattedSpanish() ?? ""
+            weightBirth = profile.birthWeight?.formattedSpanish(maxDecimals: 5) ?? ""
+            heightBirth = profile.birthHeight?.formattedSpanish(maxDecimals: 5) ?? ""
+            headBirth = profile.birthHeadCircumference?.formattedSpanish(maxDecimals: 5) ?? ""
             imageData = profile.image
         }
     }
@@ -196,11 +262,11 @@ struct SettingsView: View {
             profile.birthHeight = height
             profile.birthHeadCircumference = head
             profile.image = imageData
+            viewModel.saveProfile(profile)
         } else {
             let newProfile = BabyProfile(name: babyName, birthDate: birthDate, birthWeight: weight, birthHeight: height, birthHeadCircumference: head, image: imageData)
-            modelContext.insert(newProfile)
+            viewModel.saveProfile(newProfile)
         }
-        viewModel.fetchData()
         showingSaveAlert = true
     }
     

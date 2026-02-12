@@ -7,10 +7,14 @@
 
 import SwiftUI
 import SwiftData
+import FirebaseCore
+import FirebaseAuth
 
 @main
 struct anyelitoApp: App {
     init() {
+        FirebaseApp.configure()
+        
         // --- Navigation Bar Extreme Fix ---
         let navAppearance = UINavigationBarAppearance()
         navAppearance.configureWithTransparentBackground()
@@ -63,7 +67,17 @@ struct anyelitoApp: App {
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // Fallback: If migration fails (e.g. schema mismatch), delete the store and try again once.
+            print("SwiftData migration failed: \(error). Attempting to reset store.")
+            
+            let url = modelConfiguration.url
+            try? FileManager.default.removeItem(at: url)
+            
+            do {
+                return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            } catch {
+                fatalError("Could not create ModelContainer even after reset: \(error)")
+            }
         }
     }()
 
