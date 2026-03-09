@@ -11,6 +11,14 @@ struct Theme {
     static let tertiaryWhite = Color.white.opacity(0.3)
     static let glassBackground = Color.white.opacity(0.04)
     static let glassBorder = Color.white.opacity(0.08)
+    
+    static var backgroundGradient: LinearGradient {
+        LinearGradient(
+            colors: [deepSpace, nebulaGreen.opacity(0.5), deepSpace],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
 }
 
 struct NebulaBackground: View {

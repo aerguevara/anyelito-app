@@ -8,6 +8,8 @@ struct DashboardView: View {
     @State private var showingSleepSheet = false
     @State private var showingDiaperSheet = false
     @State private var showingMeasurementSheet = false
+    @State private var editingEvent: TrackerEvent?
+    @State private var showingEditSheet = false
     
     let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -22,38 +24,105 @@ struct DashboardView: View {
                 
                 FloatingDecorations()
                 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
+                List {
+                    Group {
                         unifiedProfileHeader
-                            .padding(.horizontal)
+                            .padding(.top, 12)
+                            .padding(.bottom, 8)
                         
                         quickActionsGrid
+                            .padding(.top, 4)
+                            .padding(.bottom, 16)
+                            .buttonStyle(.plain)
                         
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Actividad Reciente")
-                                .font(.headline)
-                                .foregroundColor(.white.opacity(0.9))
-                                .padding(.horizontal)
-                            
-                            timelineSection
-                                .glassStyle()
-                                .padding(.horizontal)
+                        Text("Actividad Reciente")
+                            .font(.headline)
+                            .foregroundColor(.white.opacity(0.9))
+                            .padding(.top, 12)
+                            .padding(.bottom, 8)
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                    
+                    if viewModel.recentActivities.isEmpty {
+                        Text("Aún no hay registros")
+                            .font(.subheadline)
+                            .foregroundColor(Theme.tertiaryWhite)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding()
+                            .listRowBackground(Color.clear)
+                    } else {
+                        ForEach(viewModel.groupedActivities) { group in
+                            Section {
+                                ForEach(group.events) { event in
+                                    TimelineRow(event: event)
+                                        .onTapGesture {
+                                            editingEvent = event
+                                        }
+                                        .listRowBackground(Color.clear)
+                                        .listRowSeparator(.hidden)
+                                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                            Button(role: .destructive) {
+                                                viewModel.deleteEvent(event)
+                                            } label: {
+                                                Label("Eliminar", systemImage: "trash")
+                                            }
+                                        }
+                                }
+                            } header: {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(formatHeaderDate(group.id))
+                                        .font(.caption.bold())
+                                        .foregroundColor(Theme.primaryGreen.opacity(0.8))
+                                        .textCase(.uppercase)
+                                    
+                                    DailySummaryView(group: group)
+                                        .padding(.bottom, 8)
+                                }
+                                .padding(.leading, 16)
+                                .padding(.top, 8)
+                            }
                         }
                     }
-                    .padding(.vertical, 12)
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("Cuidado Diario")
+            .sheet(isPresented: $showingMeasurementSheet) {
+                MeasurementSheet()
+                    .environment(viewModel)
+            }
+            .sheet(item: $editingEvent) { event in
+                switch event.eventType {
+                case .feeding:
+                    FeedingSheet(existingEvent: event)
+                        .environment(viewModel)
+                case .sleep:
+                    SleepSheet(existingEvent: event)
+                        .environment(viewModel)
+                case .diaper:
+                    DiaperSheet(existingEvent: event)
+                        .environment(viewModel)
+                case .measurement:
+                    MeasurementSheet(existingEvent: event)
+                        .environment(viewModel)
+                case .vaccine, .doctorVisit:
+                    EmptyView()
+                }
+            }
+            .sheet(isPresented: $showingSleepSheet) {
+                SleepSheet()
+                    .environment(viewModel)
+            }
             .sheet(isPresented: $showingFeedingSheet) {
                 FeedingSheet()
                     .environment(viewModel)
             }
             .sheet(isPresented: $showingDiaperSheet) {
                 DiaperSheet()
-                    .environment(viewModel)
-            }
-            .sheet(isPresented: $showingMeasurementSheet) {
-                MeasurementSheet()
                     .environment(viewModel)
             }
             .toolbarColorScheme(.dark, for: .navigationBar)
@@ -177,14 +246,7 @@ struct DashboardView: View {
     
     private var quickActionsGrid: some View {
         LazyVGrid(columns: columns, spacing: 12) {
-            QuickActionButton(
-                title: "Toma",
-                icon: "drop.fill",
-                gradient: LinearGradient(colors: [.blue, .cyan], startPoint: .topLeading, endPoint: .bottomTrailing),
-                animal: .bear
-            ) {
-                showingFeedingSheet = true
-            }
+            FeedingActionButton(showingManualFeeding: $showingFeedingSheet)
             
             SleepActionButton(showingManualSleep: $showingSleepSheet)
             
@@ -206,27 +268,138 @@ struct DashboardView: View {
                 showingMeasurementSheet = true
             }
         }
-        .padding(.horizontal)
+    }
+
+    private func formatHeaderDate(_ date: Date) -> String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date) {
+            return "Hoy"
+        } else if calendar.isDateInYesterday(date) {
+            return "Ayer"
+        } else {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .long
+            formatter.locale = Locale(identifier: "es_ES")
+            return formatter.string(from: date)
+        }
+    }
+}
+
+struct DailySummaryView: View {
+    let group: BabyTrackerViewModel.DateGroup
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            summaryItem(icon: "drop.fill", color: .blue, count: group.feedingCount, duration: group.totalFeedingDuration)
+            
+            summaryItem(icon: "moon.zzz.fill", color: .purple, count: group.sleepCount, duration: group.totalSleepDuration)
+            
+            summaryItem(icon: "toilet.fill", color: .orange, count: group.diaperCount, duration: nil)
+            
+            Spacer()
+        }
     }
     
-    private var timelineSection: some View {
-        VStack(spacing: 0) {
-            if viewModel.events.isEmpty {
-                Text("Aún no hay registros")
-                    .font(.subheadline)
-                    .foregroundColor(Theme.tertiaryWhite)
-                    .padding()
-            } else {
-                ForEach(viewModel.events.prefix(8)) { event in
-                    TimelineRow(event: event)
-                    if event.id != viewModel.events.prefix(8).last?.id {
-                        Divider()
-                            .background(Theme.glassBorder)
-                            .padding(.vertical, 8)
-                    }
+    private func summaryItem(icon: String, color: Color, count: Int, duration: TimeInterval?) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(color)
+            
+            VStack(alignment: .leading, spacing: 0) {
+                Text("\(count)")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(Theme.starWhite)
+                
+                if let duration = duration, duration > 0 {
+                    Text(formatDuration(duration))
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(Theme.secondaryWhite)
+                } else if duration != nil {
+                    // Constant height even if 0
+                    Text("0m")
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundColor(Theme.tertiaryWhite)
+                        .opacity(0.5)
                 }
             }
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .frame(minWidth: 70, minHeight: 45) // Uniform size
+        .background(color.opacity(0.12))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(color.opacity(0.4), lineWidth: 1.2) // More visible borders
+        )
+        .shadow(color: color.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+    
+    private func formatDuration(_ interval: TimeInterval) -> String {
+        let hours = Int(interval) / 3600
+        let minutes = (Int(interval) % 3600) / 60
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else {
+            return "\(minutes)m"
+        }
+    }
+}
+
+struct FeedingActionButton: View {
+    @Environment(BabyTrackerViewModel.self) private var viewModel
+    @Binding var showingManualFeeding: Bool
+    
+    var body: some View {
+        Button(action: { 
+            withAnimation(.spring()) {
+                viewModel.toggleFeeding()
+            }
+        }) {
+            VStack(spacing: 12) {
+                ZStack {
+                    let isPressed = viewModel.activeFeedingEvent != nil
+                    
+                    // Background bear stamp
+                    Image(systemName: AnimalType.bear.symbol)
+                        .font(.system(size: 40))
+                        .foregroundStyle(isPressed ? Color.blue.opacity(0.2) : Color.blue.opacity(0.12))
+                    
+                    Image(systemName: isPressed ? "stop.fill" : "drop.fill")
+                        .font(.title3.bold())
+                        .foregroundColor(isPressed ? .white : .blue)
+                }
+                
+                if viewModel.activeFeedingEvent != nil {
+                    Text(timeString(from: viewModel.feedingDuration))
+                        .font(.system(.caption, design: .monospaced).bold())
+                        .foregroundColor(Theme.starWhite)
+                } else {
+                    Text("Toma")
+                        .font(.subheadline.bold())
+                        .foregroundColor(Theme.secondaryWhite)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 110)
+            .glassStyle()
+        }
+        .buttonStyle(SquishyButtonStyle())
+        .contextMenu {
+            Button {
+                showingManualFeeding = true
+            } label: {
+                Label("Registro Posterior", systemImage: "clock.arrow.circlepath")
+            }
+        }
+    }
+    
+    private func timeString(from interval: TimeInterval) -> String {
+        let hours = Int(interval) / 3600
+        let minutes = (Int(interval) % 3600) / 60
+        let seconds = Int(interval) % 60
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
 }
 
@@ -387,13 +560,8 @@ struct TimelineRow: View {
                 .background(Color.white.opacity(0.04))
                 .cornerRadius(6)
         }
-        .contextMenu {
-            Button(role: .destructive) {
-                viewModel.deleteEvent(event)
-            } label: {
-                Label("Eliminar", systemImage: "trash")
-            }
-        }
+        .padding(12)
+        .glassStyle()
     }
 }
 

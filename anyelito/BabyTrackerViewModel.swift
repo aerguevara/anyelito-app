@@ -10,8 +10,56 @@ final class BabyTrackerViewModel {
     var profiles: [BabyProfile] = []
     
     var activeSleepEvent: TrackerEvent?
+    var activeFeedingEvent: TrackerEvent?
     var timer: AnyCancellable?
     var sleepDuration: TimeInterval = 0
+    var feedingDuration: TimeInterval = 0
+    
+    var recentActivities: [TrackerEvent] {
+        events.filter { event in
+            event.eventType == .feeding || 
+            event.eventType == .sleep || 
+            event.eventType == .diaper
+        }
+    }
+    
+    struct DateGroup: Identifiable {
+        let id: Date
+        let events: [TrackerEvent]
+        
+        var diaperCount: Int {
+            events.filter { $0.eventType == .diaper }.count
+        }
+        
+        var feedingCount: Int {
+            events.filter { $0.eventType == .feeding }.count
+        }
+        
+        var totalFeedingDuration: TimeInterval {
+            events.filter { $0.eventType == .feeding }
+                .compactMap { $0.endTime?.timeIntervalSince($0.startTime) }
+                .reduce(0, +)
+        }
+        
+        var sleepCount: Int {
+            events.filter { $0.eventType == .sleep }.count
+        }
+        
+        var totalSleepDuration: TimeInterval {
+            events.filter { $0.eventType == .sleep }
+                .compactMap { $0.endTime?.timeIntervalSince($0.startTime) }
+                .reduce(0, +)
+        }
+    }
+    
+    var groupedActivities: [DateGroup] {
+        let grouped = Dictionary(grouping: recentActivities) { event in
+            Calendar.current.startOfDay(for: event.startTime)
+        }
+        return grouped.keys.sorted(by: >).map { date in
+            DateGroup(id: date, events: (grouped[date] ?? []).sorted { $0.startTime > $1.startTime })
+        }
+    }
     
     private var profileListener: ListenerRegistration?
     private var eventsListener: ListenerRegistration?
@@ -165,6 +213,16 @@ final class BabyTrackerViewModel {
             
             let profileDescriptor = FetchDescriptor<BabyProfile>()
             profiles = try modelContext.fetch(profileDescriptor)
+            
+            // Sync timers after fetch
+            activeSleepEvent = events.first { $0.eventType == .sleep && $0.endTime == nil }
+            activeFeedingEvent = events.first { $0.eventType == .feeding && $0.endTime == nil }
+            
+            if activeSleepEvent != nil || activeFeedingEvent != nil {
+                startTimer()
+            } else {
+                stopTimer()
+            }
         } catch {
             print("Fetch failed")
         }
@@ -202,16 +260,27 @@ final class BabyTrackerViewModel {
         fetchData()
         
         // Push to cloud
+        syncEventToCloud(event)
+    }
+    
+    func updateEvent(_ event: TrackerEvent) {
+        // SwiftData handles local updates via the object properties
+        try? modelContext.save()
+        fetchData()
+        
+        // Update in cloud
+        syncEventToCloud(event)
+    }
+    
+    private func syncEventToCloud(_ event: TrackerEvent) {
         Task {
             if let profile = profiles.first {
                 do {
                     try await FirestoreService.shared.syncEvent(event, forBabyId: profile.id.uuidString)
-                    print("✅ Evento enviado a la nube con éxito")
+                    print("✅ Evento sincronizado con la nube con éxito")
                 } catch {
-                    print("❌ Error al enviar evento a la nube: \(error)")
+                    print("❌ Error al sincronizar evento con la nube: \(error)")
                 }
-            } else {
-                print("⚠️ No hay perfil de bebé para sincronizar el evento")
             }
         }
     }
@@ -243,7 +312,8 @@ final class BabyTrackerViewModel {
     
     func checkForActiveTimer() {
         activeSleepEvent = events.first { $0.eventType == .sleep && $0.endTime == nil }
-        if activeSleepEvent != nil {
+        activeFeedingEvent = events.first { $0.eventType == .feeding && $0.endTime == nil }
+        if activeSleepEvent != nil || activeFeedingEvent != nil {
             startTimer()
         }
     }
@@ -251,14 +321,27 @@ final class BabyTrackerViewModel {
     func toggleSleep() {
         if let active = activeSleepEvent {
             active.endTime = Date()
+            updateEvent(active)
             activeSleepEvent = nil
-            stopTimer()
         } else {
             let newEvent = TrackerEvent(type: .sleep, startTime: Date())
             addEvent(newEvent)
             activeSleepEvent = newEvent
-            startTimer()
         }
+        fetchData()
+    }
+    
+    func toggleFeeding() {
+        if let active = activeFeedingEvent {
+            active.endTime = Date()
+            updateEvent(active)
+            activeFeedingEvent = nil
+        } else {
+            let newEvent = TrackerEvent(type: .feeding, startTime: Date(), subType: "Pecho (Ambos)")
+            addEvent(newEvent)
+            activeFeedingEvent = newEvent
+        }
+        fetchData()
     }
     
     private func startTimer() {
@@ -266,14 +349,20 @@ final class BabyTrackerViewModel {
         timer = Timer.publish(every: 1, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
-                guard let self = self, let active = self.activeSleepEvent else { return }
-                self.sleepDuration = Date().timeIntervalSince(active.startTime)
+                guard let self = self else { return }
+                if let sleep = self.activeSleepEvent {
+                    self.sleepDuration = Date().timeIntervalSince(sleep.startTime)
+                }
+                if let feeding = self.activeFeedingEvent {
+                    self.feedingDuration = Date().timeIntervalSince(feeding.startTime)
+                }
             }
     }
     
     private func stopTimer() {
         timer?.cancel()
         sleepDuration = 0
+        feedingDuration = 0
     }
     
     // MARK: - Summary Logic

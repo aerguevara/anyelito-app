@@ -5,13 +5,15 @@ struct FeedingSheet: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var feedingType: FeedingType = .breast
-    @State private var quantity: Double = 120
+    @State private var quantity: Double = 0
     @State private var breastSide: BreastSide = .left
     @State private var startTime = Date()
     @State private var endTime = Date()
     @State private var useDuration = false
-    @State private var durationMinutes: Double = 15
+    @State private var durationMinutes: Double = 0
     @State private var isLM = true
+
+    var existingEvent: TrackerEvent? = nil
     
     enum FeedingType: String, CaseIterable {
         case breast = "Pecho"
@@ -95,6 +97,9 @@ struct FeedingSheet: View {
                     Button("Cancelar") { dismiss() }
                 }
             }
+            .onAppear {
+                loadExistingData()
+            }
         }
     }
     
@@ -102,14 +107,50 @@ struct FeedingSheet: View {
         let finalEndTime = useDuration ? Calendar.current.date(byAdding: .second, value: Int(durationMinutes * 60), to: startTime)! : endTime
         let subType = feedingType == .breast ? "Pecho (\(breastSide.rawValue))" : (isLM ? "Biberón (LM)" : "Biberón (Fórmula)")
         
-        let event = TrackerEvent(
-            type: .feeding,
-            startTime: startTime,
-            endTime: finalEndTime,
-            value: feedingType == .bottle ? quantity : nil,
-            subType: subType
-        )
-        viewModel.addEvent(event)
+        if let event = existingEvent {
+            event.startTime = startTime
+            event.endTime = finalEndTime
+            event.value = feedingType == .bottle ? quantity : nil
+            event.subType = subType
+            viewModel.updateEvent(event)
+        } else {
+            let event = TrackerEvent(
+                type: .feeding,
+                startTime: startTime,
+                endTime: finalEndTime,
+                value: feedingType == .bottle ? quantity : nil,
+                subType: subType
+            )
+            viewModel.addEvent(event)
+        }
         dismiss()
+    }
+}
+
+extension FeedingSheet {
+    private func loadExistingData() {
+        guard let event = existingEvent else { return }
+        startTime = event.startTime
+        endTime = event.endTime ?? event.startTime
+        if let val = event.value {
+            quantity = val
+        }
+        
+        if let sub = event.subType {
+            if sub.contains("Pecho") {
+                feedingType = .breast
+                if sub.contains("(Izquierdo)") { breastSide = .left }
+                else if sub.contains("(Derecho)") { breastSide = .right }
+                else { breastSide = .both }
+            } else {
+                feedingType = .bottle
+                isLM = sub.contains("(LM)")
+            }
+        }
+        
+        if let end = event.endTime {
+            useDuration = true
+            durationMinutes = end.timeIntervalSince(event.startTime) / 60
+        }
     }
 }

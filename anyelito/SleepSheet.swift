@@ -10,6 +10,8 @@ struct SleepSheet: View {
     @State private var durationHours: Double = 1
     @State private var durationMinutes: Double = 0
     
+    var existingEvent: TrackerEvent? = nil
+    
     var body: some View {
         NavigationStack {
             Form {
@@ -49,6 +51,9 @@ struct SleepSheet: View {
                     Button("Cancelar") { dismiss() }
                 }
             }
+            .onAppear {
+                loadExistingData()
+            }
         }
     }
     
@@ -61,13 +66,33 @@ struct SleepSheet: View {
             finalEndTime = endTime
         }
         
-        let event = TrackerEvent(
-            type: .sleep,
-            startTime: startTime,
-            endTime: finalEndTime,
-            subType: "Manual"
-        )
-        viewModel.addEvent(event)
+        if let event = existingEvent {
+            event.startTime = startTime
+            event.endTime = finalEndTime
+            viewModel.updateEvent(event)
+        } else {
+            let event = TrackerEvent(
+                type: .sleep,
+                startTime: startTime,
+                endTime: finalEndTime,
+                subType: "Manual"
+            )
+            viewModel.addEvent(event)
+        }
         dismiss()
+    }
+}
+
+extension SleepSheet {
+    private func loadExistingData() {
+        guard let event = existingEvent else { return }
+        startTime = event.startTime
+        endTime = event.endTime ?? event.startTime
+        
+        if let end = event.endTime {
+            let diff = end.timeIntervalSince(event.startTime)
+            durationHours = floor(diff / 3600)
+            durationMinutes = floor((diff.truncatingRemainder(dividingBy: 3600)) / 60)
+        }
     }
 }

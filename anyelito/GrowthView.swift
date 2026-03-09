@@ -5,6 +5,7 @@ import SwiftData
 struct GrowthView: View {
     @Environment(BabyTrackerViewModel.self) private var viewModel
     @State private var selectedMetric: MetricType = .weight
+    @State private var selectedEvent: TrackerEvent?
     
     enum MetricType: String, CaseIterable {
         case weight = "Peso (kg)"
@@ -43,7 +44,6 @@ struct GrowthView: View {
                                 .padding(.horizontal)
                             
                             measurementList
-                                .glassStyle()
                                 .padding(.horizontal)
                         }
                     }
@@ -53,12 +53,15 @@ struct GrowthView: View {
             .navigationTitle("Crecimiento")
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarBackground(.hidden, for: .navigationBar)
+            .sheet(item: $selectedEvent) { event in
+                MeasurementSheet(existingEvent: event)
+                    .environment(viewModel)
+            }
         }
     }
     
     private var chartSection: some View {
         Chart {
-            // 1. Shaded area: Normal Development Range (P3 to P97)
             ForEach(currentWHOData) { data in
                 AreaMark(
                     x: .value("Mes", Double(data.month)),
@@ -69,7 +72,6 @@ struct GrowthView: View {
                 .interpolationMethod(.catmullRom)
             }
             
-            // 2. WHO Median (P50): Global Average
             ForEach(currentWHOData) { data in
                 LineMark(
                     x: .value("Mes", Double(data.month)),
@@ -81,7 +83,6 @@ struct GrowthView: View {
                 .interpolationMethod(.catmullRom)
             }
             
-            // 3. User Baby Data: Cyan Solid Line
             let babyPoints = userMeasurementsForChart
             ForEach(babyPoints) { dataPoint in
                 LineMark(
@@ -90,11 +91,10 @@ struct GrowthView: View {
                     series: .value("Baby", "User")
                 )
                 .foregroundStyle(Color.cyan)
-                .lineStyle(StrokeStyle(lineWidth: 1.8)) // Even thinner for "finesa" (was 3)
+                .lineStyle(StrokeStyle(lineWidth: 1.8))
                 .interpolationMethod(.catmullRom)
             }
             
-            // Distinct points on top
             ForEach(babyPoints) { dataPoint in
                 PointMark(
                     x: .value("Mes", dataPoint.month),
@@ -106,7 +106,7 @@ struct GrowthView: View {
         }
         .frame(height: 250)
         .chartXScale(domain: chartXScaleDomain)
-        .clipped() // Ensure no overflow beyond the plot area
+        .clipped()
         .chartXAxis {
             AxisMarks(values: .automatic(desiredCount: 6)) { value in
                 AxisGridLine().foregroundStyle(Theme.tertiaryWhite)
@@ -140,7 +140,6 @@ struct GrowthView: View {
             }
             
             VStack(alignment: .leading, spacing: 10) {
-                // User Baby
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
                         RoundedRectangle(cornerRadius: 1)
@@ -158,7 +157,6 @@ struct GrowthView: View {
                     }
                 }
                 
-                // WHO Average
                 HStack(spacing: 8) {
                     Path { path in
                         path.move(to: CGPoint(x: 0, y: 5))
@@ -171,7 +169,6 @@ struct GrowthView: View {
                         .foregroundColor(Theme.secondaryWhite)
                 }
                 
-                // Normal Range
                 HStack(spacing: 8) {
                     RoundedRectangle(cornerRadius: 2)
                         .fill(Theme.primaryGreen.opacity(0.1))
@@ -189,7 +186,7 @@ struct GrowthView: View {
     }
     
     private var measurementList: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 10) {
             let sortedEvents = userMeasurementsForList
             
             if sortedEvents.isEmpty {
@@ -197,6 +194,8 @@ struct GrowthView: View {
                     .font(.caption)
                     .foregroundColor(Theme.tertiaryWhite)
                     .padding()
+                    .frame(maxWidth: .infinity)
+                    .glassStyle()
             } else {
                 ForEach(sortedEvents) { event in
                     HStack {
@@ -211,18 +210,39 @@ struct GrowthView: View {
                         
                         Spacer()
                         
-                        Text(event.value?.formattedSpanish(maxDecimals: selectedMetric == .weight ? 5 : 2) ?? "0")
+                        Text(event.value?.formattedSpanish(maxDecimals: selectedMetric == .weight ? 3 : 1) ?? "0")
                             .font(.system(.headline, design: .monospaced))
                             .foregroundColor(Theme.primaryGreen)
                         
                         Text(selectedMetric == .weight ? "kg" : "cm")
                             .font(.caption2)
                             .foregroundColor(Theme.secondaryWhite)
+                        
+                        Menu {
+                            Button {
+                                selectedEvent = event
+                            } label: {
+                                Label("Editar", systemImage: "pencil")
+                            }
+                            
+                            Button(role: .destructive) {
+                                viewModel.deleteEvent(event)
+                            } label: {
+                                Label("Eliminar", systemImage: "trash")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                                .font(.title3)
+                                .foregroundColor(Theme.secondaryWhite)
+                                .padding(.leading, 8)
+                        }
                     }
-                    .padding(.vertical, 8)
-                    
-                    if event.id != sortedEvents.last?.id {
-                        Divider().background(Theme.glassBorder)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 16)
+                    .glassStyle()
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        selectedEvent = event
                     }
                 }
             }
@@ -285,8 +305,6 @@ struct GrowthView: View {
         let currentMonths = monthsSinceBirth(Date())
         let lastMeasurementMonth = userMeasurementsForChart.last?.month ?? 0
         let maxDataMonth = max(currentMonths, lastMeasurementMonth)
-        
-        // Show at least 6 months, or current age + a small buffer
         let upperLimit = max(6.0, ceil(maxDataMonth + 0.5))
         return 0...min(24.0, upperLimit)
     }
@@ -297,3 +315,5 @@ struct GrowthView: View {
         return Double(components.month ?? 0) + Double(components.day ?? 0) / 30.0
     }
 }
+
+

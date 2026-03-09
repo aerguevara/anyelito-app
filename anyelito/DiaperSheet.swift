@@ -11,6 +11,8 @@ struct DiaperSheet: View {
     @State private var pooColor: PooColor = .mustard
     @State private var pooTexture: PooTexture = .normal
     
+    var existingEvent: TrackerEvent? = nil
+    
     enum PooColor: String, CaseIterable {
         case mustard = "Mostaza"
         case green = "Verde"
@@ -98,6 +100,9 @@ struct DiaperSheet: View {
                     Button("Cancelar") { dismiss() }
                 }
             }
+            .onAppear {
+                loadExistingData()
+            }
         }
     }
     
@@ -106,12 +111,47 @@ struct DiaperSheet: View {
         if isPee { subTypes.append("Orina") }
         if isPoo { subTypes.append("Heces (\(pooColor.rawValue), \(pooTexture.rawValue))") }
         
-        let event = TrackerEvent(
-            type: .diaper,
-            startTime: date,
-            subType: subTypes.joined(separator: " + ")
-        )
-        viewModel.addEvent(event)
+        let subType = subTypes.joined(separator: " + ")
+        
+        if let event = existingEvent {
+            event.startTime = date
+            event.subType = subType
+            viewModel.updateEvent(event)
+        } else {
+            let event = TrackerEvent(
+                type: .diaper,
+                startTime: date,
+                subType: subType
+            )
+            viewModel.addEvent(event)
+        }
         dismiss()
+    }
+}
+
+extension DiaperSheet {
+    private func loadExistingData() {
+        guard let event = existingEvent else { return }
+        date = event.startTime
+        
+        if let sub = event.subType {
+            isPee = sub.contains("Orina")
+            isPoo = sub.contains("Heces")
+            
+            if isPoo {
+                for color in PooColor.allCases {
+                    if sub.contains(color.rawValue) {
+                        pooColor = color
+                        break
+                    }
+                }
+                for texture in PooTexture.allCases {
+                    if sub.contains(texture.rawValue) {
+                        pooTexture = texture
+                        break
+                    }
+                }
+            }
+        }
     }
 }
