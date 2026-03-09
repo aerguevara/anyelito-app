@@ -10,6 +10,7 @@ struct DashboardView: View {
     @State private var showingMeasurementSheet = false
     @State private var editingEvent: TrackerEvent?
     @State private var showingEditSheet = false
+    @Environment(\.scenePhase) private var scenePhase
     
     let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -127,6 +128,12 @@ struct DashboardView: View {
             }
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarBackground(.hidden, for: .navigationBar)
+            .onChange(of: scenePhase) { oldPhase, newPhase in
+                if newPhase == .active {
+                    viewModel.fetchData()
+                    viewModel.syncAllPendingData()
+                }
+            }
         }
     }
     

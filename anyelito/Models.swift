@@ -54,13 +54,14 @@ final class TrackerEvent {
     var subType: String? // "LeftBreast", "Formula", "Pee", "Poo"
     var notes: String?
     var metadata: [String: String]? // For colors or vaccine batch
+    var isSynced: Bool = false
     
     var eventType: EventType {
         get { EventType(rawValue: type) ?? .feeding }
         set { type = newValue.rawValue }
     }
     
-    init(id: UUID = UUID(), type: EventType, startTime: Date = Date(), endTime: Date? = nil, value: Double? = nil, subType: String? = nil, notes: String? = nil, metadata: [String: String]? = nil) {
+    init(id: UUID = UUID(), type: EventType, startTime: Date = Date(), endTime: Date? = nil, value: Double? = nil, subType: String? = nil, notes: String? = nil, metadata: [String: String]? = nil, isSynced: Bool = false) {
         self.id = id
         self.type = type.rawValue
         self.startTime = startTime
@@ -69,5 +70,6 @@ final class TrackerEvent {
         self.subType = subType
         self.notes = notes
         self.metadata = metadata
+        self.isSynced = isSynced
     }
 }

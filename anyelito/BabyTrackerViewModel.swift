@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import Combine
 import FirebaseFirestore
+import WidgetKit
 
 @Observable
 final class BabyTrackerViewModel {
@@ -157,6 +158,7 @@ final class BabyTrackerViewModel {
             
             try? modelContext.save()
             fetchData()
+            WidgetCenter.shared.reloadAllTimelines()
         }
     }
     
@@ -182,15 +184,18 @@ final class BabyTrackerViewModel {
                 localEvent.value = data["value"] as? Double
                 localEvent.subType = data["subType"] as? String
                 localEvent.notes = data["notes"] as? String
+                localEvent.isSynced = true // Ya está en la nube
             } else {
                 // Insert new
                 if let newEvent = createEvent(from: data) {
+                    newEvent.isSynced = true // Ya está en la nube
                     modelContext.insert(newEvent)
                 }
             }
         }
         try? modelContext.save()
         fetchData()
+        WidgetCenter.shared.reloadAllTimelines()
     }
     
     private func createEvent(from data: [String: Any]) -> TrackerEvent? {
@@ -203,7 +208,7 @@ final class BabyTrackerViewModel {
         let sub = data["subType"] as? String
         let notes = data["notes"] as? String
         
-        return TrackerEvent(id: id, type: type, startTime: start, endTime: end, value: value, subType: sub, notes: notes)
+        return TrackerEvent(id: id, type: type, startTime: start, endTime: end, value: value, subType: sub, notes: notes, isSynced: true)
     }
     
     func fetchData() {
@@ -256,6 +261,7 @@ final class BabyTrackerViewModel {
     }
     
     func addEvent(_ event: TrackerEvent) {
+        event.isSynced = false
         modelContext.insert(event)
         fetchData()
         
@@ -265,6 +271,7 @@ final class BabyTrackerViewModel {
     
     func updateEvent(_ event: TrackerEvent) {
         // SwiftData handles local updates via the object properties
+        event.isSynced = false
         try? modelContext.save()
         fetchData()
         
@@ -277,6 +284,8 @@ final class BabyTrackerViewModel {
             if let profile = profiles.first {
                 do {
                     try await FirestoreService.shared.syncEvent(event, forBabyId: profile.id.uuidString)
+                    event.isSynced = true
+                    try? modelContext.save()
                     print("✅ Evento sincronizado con la nube con éxito")
                 } catch {
                     print("❌ Error al sincronizar evento con la nube: \(error)")
@@ -319,28 +328,12 @@ final class BabyTrackerViewModel {
     }
     
     func toggleSleep() {
-        if let active = activeSleepEvent {
-            active.endTime = Date()
-            updateEvent(active)
-            activeSleepEvent = nil
-        } else {
-            let newEvent = TrackerEvent(type: .sleep, startTime: Date())
-            addEvent(newEvent)
-            activeSleepEvent = newEvent
-        }
+        SharedActivityManager.shared.toggleSleep()
         fetchData()
     }
     
     func toggleFeeding() {
-        if let active = activeFeedingEvent {
-            active.endTime = Date()
-            updateEvent(active)
-            activeFeedingEvent = nil
-        } else {
-            let newEvent = TrackerEvent(type: .feeding, startTime: Date(), subType: "Pecho (Ambos)")
-            addEvent(newEvent)
-            activeFeedingEvent = newEvent
-        }
+        SharedActivityManager.shared.toggleFeeding()
         fetchData()
     }
     
@@ -393,10 +386,13 @@ final class BabyTrackerViewModel {
                 do {
                     try await FirestoreService.shared.syncProfile(profile)
                     print("✅ Perfil \(profile.name) sincronizado")
-                    for event in events {
+                    let pendingEvents = events.filter { !$0.isSynced }
+                    for event in pendingEvents {
                         try await FirestoreService.shared.syncEvent(event, forBabyId: profile.id.uuidString)
+                        event.isSynced = true
                     }
-                    print("✅ Todos los eventos (\(events.count)) sincronizados")
+                    try? modelContext.save()
+                    print("✅ Eventos nuevos (\(pendingEvents.count)) sincronizados")
                 } catch {
                     print("❌ Error en syncAllPendingData: \(error)")
                 }

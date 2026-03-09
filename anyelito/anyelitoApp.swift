@@ -62,16 +62,25 @@ struct anyelitoApp: App {
             BabyProfile.self,
             TrackerEvent.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        
+        // Use App Group URL for shared SwiftData storage
+        let appGroupIdentifier = "group.com.anyelo.anyelito"
+        let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier)?
+            .appendingPathComponent("anyelito.sqlite")
+        
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            groupContainer: .identifier(appGroupIdentifier)
+        )
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            // Fallback: If migration fails (e.g. schema mismatch), delete the store and try again once.
             print("SwiftData migration failed: \(error). Attempting to reset store.")
             
-            let url = modelConfiguration.url
-            try? FileManager.default.removeItem(at: url)
+            let currentUrl = modelConfiguration.url
+            try? FileManager.default.removeItem(atPath: currentUrl.path)
             
             do {
                 return try ModelContainer(for: schema, configurations: [modelConfiguration])

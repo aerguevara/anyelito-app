@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DA6E5A4F2F5EE8B900AFCCD7 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA6E5A4E2F5EE8B900AFCCD7 /* WidgetKit.framework */; };
+		DA6E5A512F5EE8B900AFCCD7 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA6E5A502F5EE8B900AFCCD7 /* SwiftUI.framework */; };
+		DA6E5A622F5EE8BA00AFCCD7 /* AnyelitoWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DA6E5A4C2F5EE8B900AFCCD7 /* AnyelitoWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DA8746102F362A6E004CBF58 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = DA87460F2F362A6E004CBF58 /* FirebaseAnalytics */; };
 		DA8746122F362A6E004CBF58 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = DA8746112F362A6E004CBF58 /* FirebaseAuth */; };
 		DA8746142F362A6E004CBF58 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = DA8746132F362A6E004CBF58 /* FirebaseCore */; };
@@ -28,17 +31,64 @@
 			remoteGlobalIDString = DA0A32002F3277550058AFC7;
 			remoteInfo = anyelito;
 		};
+		DA6E5A602F5EE8BA00AFCCD7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DA0A31F92F3277550058AFC7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DA6E5A4B2F5EE8B900AFCCD7;
+			remoteInfo = AnyelitoWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DA6E5A672F5EE8BA00AFCCD7 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				DA6E5A622F5EE8BA00AFCCD7 /* AnyelitoWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		DA0A32012F3277550058AFC7 /* anyelito.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = anyelito.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA0A320E2F3277570058AFC7 /* anyelitoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = anyelitoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA0A32182F3277570058AFC7 /* anyelitoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = anyelitoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA6E5A4C2F5EE8B900AFCCD7 /* AnyelitoWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AnyelitoWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA6E5A4E2F5EE8B900AFCCD7 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		DA6E5A502F5EE8B900AFCCD7 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		DA6E5A682F5EE8FD00AFCCD7 /* AnyelitoWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AnyelitoWidgetExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		DA6E5A632F5EE8BA00AFCCD7 /* Exceptions for "AnyelitoWidget" folder in "AnyelitoWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = DA6E5A4B2F5EE8B900AFCCD7 /* AnyelitoWidgetExtension */;
+		};
+		DA6E5A6B2F5EF04900AFCCD7 /* Exceptions for "anyelito" folder in "AnyelitoWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Models.swift,
+				SharedActivityManager.swift,
+				WidgetIntents.swift,
+			);
+			target = DA6E5A4B2F5EE8B900AFCCD7 /* AnyelitoWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		DA0A32032F3277550058AFC7 /* anyelito */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				DA6E5A6B2F5EF04900AFCCD7 /* Exceptions for "anyelito" folder in "AnyelitoWidgetExtension" target */,
+			);
 			path = anyelito;
 			sourceTree = "<group>";
 		};
@@ -50,6 +100,14 @@
 		DA0A321B2F3277570058AFC7 /* anyelitoUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = anyelitoUITests;
+			sourceTree = "<group>";
+		};
+		DA6E5A522F5EE8B900AFCCD7 /* AnyelitoWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				DA6E5A632F5EE8BA00AFCCD7 /* Exceptions for "AnyelitoWidget" folder in "AnyelitoWidgetExtension" target */,
+			);
+			path = AnyelitoWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -80,15 +138,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DA6E5A492F5EE8B900AFCCD7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DA6E5A512F5EE8B900AFCCD7 /* SwiftUI.framework in Frameworks */,
+				DA6E5A4F2F5EE8B900AFCCD7 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		DA0A31F82F3277550058AFC7 = {
 			isa = PBXGroup;
 			children = (
+				DA6E5A682F5EE8FD00AFCCD7 /* AnyelitoWidgetExtension.entitlements */,
 				DA0A32032F3277550058AFC7 /* anyelito */,
 				DA0A32112F3277570058AFC7 /* anyelitoTests */,
 				DA0A321B2F3277570058AFC7 /* anyelitoUITests */,
+				DA6E5A522F5EE8B900AFCCD7 /* AnyelitoWidget */,
+				DA6E5A4D2F5EE8B900AFCCD7 /* Frameworks */,
 				DA0A32022F3277550058AFC7 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -99,8 +169,18 @@
 				DA0A32012F3277550058AFC7 /* anyelito.app */,
 				DA0A320E2F3277570058AFC7 /* anyelitoTests.xctest */,
 				DA0A32182F3277570058AFC7 /* anyelitoUITests.xctest */,
+				DA6E5A4C2F5EE8B900AFCCD7 /* AnyelitoWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DA6E5A4D2F5EE8B900AFCCD7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DA6E5A4E2F5EE8B900AFCCD7 /* WidgetKit.framework */,
+				DA6E5A502F5EE8B900AFCCD7 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -113,10 +193,12 @@
 				DA0A31FD2F3277550058AFC7 /* Sources */,
 				DA0A31FE2F3277550058AFC7 /* Frameworks */,
 				DA0A31FF2F3277550058AFC7 /* Resources */,
+				DA6E5A672F5EE8BA00AFCCD7 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				DA6E5A612F5EE8BA00AFCCD7 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				DA0A32032F3277550058AFC7 /* anyelito */,
@@ -178,6 +260,28 @@
 			productReference = DA0A32182F3277570058AFC7 /* anyelitoUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		DA6E5A4B2F5EE8B900AFCCD7 /* AnyelitoWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DA6E5A642F5EE8BA00AFCCD7 /* Build configuration list for PBXNativeTarget "AnyelitoWidgetExtension" */;
+			buildPhases = (
+				DA6E5A482F5EE8B900AFCCD7 /* Sources */,
+				DA6E5A492F5EE8B900AFCCD7 /* Frameworks */,
+				DA6E5A4A2F5EE8B900AFCCD7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				DA6E5A522F5EE8B900AFCCD7 /* AnyelitoWidget */,
+			);
+			name = AnyelitoWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = AnyelitoWidgetExtension;
+			productReference = DA6E5A4C2F5EE8B900AFCCD7 /* AnyelitoWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -198,6 +302,9 @@
 					DA0A32172F3277570058AFC7 = {
 						CreatedOnToolsVersion = 26.2;
 						TestTargetID = DA0A32002F3277550058AFC7;
+					};
+					DA6E5A4B2F5EE8B900AFCCD7 = {
+						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
@@ -221,6 +328,7 @@
 				DA0A32002F3277550058AFC7 /* anyelito */,
 				DA0A320D2F3277570058AFC7 /* anyelitoTests */,
 				DA0A32172F3277570058AFC7 /* anyelitoUITests */,
+				DA6E5A4B2F5EE8B900AFCCD7 /* AnyelitoWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -241,6 +349,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		DA0A32162F3277570058AFC7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DA6E5A4A2F5EE8B900AFCCD7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -271,6 +386,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DA6E5A482F5EE8B900AFCCD7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -283,6 +405,11 @@
 			isa = PBXTargetDependency;
 			target = DA0A32002F3277550058AFC7 /* anyelito */;
 			targetProxy = DA0A32192F3277570058AFC7 /* PBXContainerItemProxy */;
+		};
+		DA6E5A612F5EE8BA00AFCCD7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DA6E5A4B2F5EE8B900AFCCD7 /* AnyelitoWidgetExtension */;
+			targetProxy = DA6E5A602F5EE8BA00AFCCD7 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -413,6 +540,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = anyelito/anyelito.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = SDRDXJM7RR;
@@ -428,7 +556,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aerguevara.anyelito;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -450,6 +578,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = anyelito/anyelito.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = SDRDXJM7RR;
@@ -465,7 +594,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.aerguevara.anyelito;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -570,6 +699,68 @@
 			};
 			name = Release;
 		};
+		DA6E5A652F5EE8BA00AFCCD7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = AnyelitoWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SDRDXJM7RR;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AnyelitoWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AnyelitoWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aerguevara.anyelito.AnyelitoWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DA6E5A662F5EE8BA00AFCCD7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = AnyelitoWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = SDRDXJM7RR;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AnyelitoWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AnyelitoWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aerguevara.anyelito.AnyelitoWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -605,6 +796,15 @@
 			buildConfigurations = (
 				DA0A32292F3277570058AFC7 /* Debug */,
 				DA0A322A2F3277570058AFC7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DA6E5A642F5EE8BA00AFCCD7 /* Build configuration list for PBXNativeTarget "AnyelitoWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DA6E5A652F5EE8BA00AFCCD7 /* Debug */,
+				DA6E5A662F5EE8BA00AFCCD7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
