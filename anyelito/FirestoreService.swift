@@ -62,16 +62,34 @@ class FirestoreService {
     }
     
     func listenToProfile(forBabyId babyId: String, completion: @escaping ([String: Any]) -> Void) -> ListenerRegistration {
+        print("👂 [Firestore] Iniciando listener de perfil para \(babyId)")
         return babyCollection.document(babyId).addSnapshotListener { snapshot, error in
-            guard let data = snapshot?.data() else { return }
+            if let error = error {
+                print("❌ [Firestore] Error en listener de perfil: \(error.localizedDescription)")
+                return
+            }
+            guard let data = snapshot?.data() else { 
+                print("⚠️ [Firestore] Snapshot de perfil vacío")
+                return 
+            }
+            print("👤 [Firestore] Perfil actualizado desde la nube")
             completion(data)
         }
     }
     
     func listenToEvents(forBabyId babyId: String, completion: @escaping ([[String: Any]]) -> Void) -> ListenerRegistration {
+        print("👂 [Firestore] Iniciando listener de eventos para \(babyId)")
         return babyCollection.document(babyId).collection("events").addSnapshotListener { snapshot, error in
-            guard let documents = snapshot?.documents else { return }
+            if let error = error {
+                print("❌ [Firestore] Error en listener de eventos: \(error.localizedDescription)")
+                return
+            }
+            guard let documents = snapshot?.documents else { 
+                print("⚠️ [Firestore] Snapshot de eventos vacío")
+                return 
+            }
             let eventsData = documents.map { $0.data() }
+            print("📥 [Firestore] Recibidos \(eventsData.count) eventos vía listener")
             completion(eventsData)
         }
     }

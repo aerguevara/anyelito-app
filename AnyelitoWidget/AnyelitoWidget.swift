@@ -15,14 +15,23 @@ struct Provider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<SimpleEntry>) -> ()) {
+        print("🏷️ [Widget] getTimeline invocado")
         Task {
+            // Sincronizar desde la nube antes de cargar la entrada
+            await SharedActivityManager.shared.syncFromCloud(isWidget: true)
+            
             let feedingActive = await SharedActivityManager.shared.isFeedingActive()
             let sleepActive = await SharedActivityManager.shared.isSleepActive()
             let feedingStartTime = await SharedActivityManager.shared.activeFeedingStartTime()
             let sleepStartTime = await SharedActivityManager.shared.activeSleepStartTime()
             
+            print("🏷️ [Widget] Datos obtenidos - Feeding: \(feedingActive), Sleep: \(sleepActive)")
+            
             let entry = SimpleEntry(date: Date(), feedingActive: feedingActive, sleepActive: sleepActive, feedingStartTime: feedingStartTime, sleepStartTime: sleepStartTime)
-            let timeline = Timeline(entries: [entry], policy: .atEnd)
+            
+            // Actualizar cada 15 minutos para asegurar sincronización remota
+            let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date()) ?? Date()
+            let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
             completion(timeline)
         }
     }
@@ -40,87 +49,163 @@ struct AnyelitoWidgetEntryView : View {
     var entry: Provider.Entry
 
     var body: some View {
-        VStack(spacing: 12) {
-            Text("anyelito")
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundColor(.secondary)
+        VStack(spacing: 8) {
+            // Header
+            HStack {
+                Text("anyelito")
+                    .font(.system(size: 14, weight: .black, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.white.opacity(0.9), .white.opacity(0.6)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                Spacer()
+                Circle()
+                    .fill(Color.white.opacity(0.1))
+                    .frame(width: 20, height: 20)
+                    .overlay(
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 8))
+                            .foregroundColor(.white.opacity(0.5))
+                    )
+            }
+            .padding(.horizontal, 4)
             
-            HStack(spacing: 15) {
-                // Control de Toma
-                Button(intent: ToggleFeedingIntent()) {
-                    VStack(spacing: 4) {
-                        Image(systemName: entry.feedingActive ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.system(size: 24))
-                        if entry.feedingActive, let startTime = entry.feedingStartTime {
-                            Text(startTime, style: .timer)
-                                .font(.caption2)
-                                .multilineTextAlignment(.center)
-                        } else {
-                            Text("Toma")
-                                .font(.caption2)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(entry.feedingActive ? Color.orange.opacity(0.2) : Color.blue.opacity(0.1))
-                    .cornerRadius(12)
-                }
-                .buttonStyle(.plain)
+            HStack(spacing: 12) {
+                // Control de Toma (Feeding)
+                WidgetButton(
+                    intent: ToggleFeedingIntent(),
+                    isActive: entry.feedingActive,
+                    startTime: entry.feedingStartTime,
+                    label: "Toma",
+                    icon: "drop.fill",
+                    activeColors: [Color(hex: "FF9500"), Color(hex: "FFCC00")]
+                )
                 
-                // Control de Sueño
-                Button(intent: ToggleSleepIntent()) {
-                    VStack(spacing: 4) {
-                        Image(systemName: entry.sleepActive ? "moon.zzz.fill" : "moon.fill")
-                            .font(.system(size: 24))
-                        if entry.sleepActive, let startTime = entry.sleepStartTime {
-                            Text(startTime, style: .timer)
-                                .font(.caption2)
-                                .multilineTextAlignment(.center)
-                        } else {
-                            Text("Sueño")
-                                .font(.caption2)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(entry.sleepActive ? Color.purple.opacity(0.2) : Color.indigo.opacity(0.1))
-                    .cornerRadius(12)
-                }
-                .buttonStyle(.plain)
+                // Control de Sueño (Sleep)
+                WidgetButton(
+                    intent: ToggleSleepIntent(),
+                    isActive: entry.sleepActive,
+                    startTime: entry.sleepStartTime,
+                    label: "Sueño",
+                    icon: "moon.zzz.fill",
+                    activeColors: [Color(hex: "5856D6"), Color(hex: "AF52DE")]
+                )
             }
         }
-        .padding()
-        .containerBackground(
-            LinearGradient(colors: [Color.white, Color(hex: "F0F4FF")], startPoint: .topLeading, endPoint: .bottomTrailing),
-            for: .widget
-        )
+        .padding(12)
+        .containerBackground(for: .widget) {
+            ZStack {
+                // Color exacto Theme.deepSpace
+                Color(hex: "08120A")
+                
+                // Efecto Nebulosa (Theme.nebulaGreen y Theme.primaryGreen)
+                RadialGradient(
+                    colors: [Color(hex: "064E3B").opacity(0.7), .clear],
+                    center: .topLeading,
+                    startRadius: 0,
+                    endRadius: 200
+                )
+                
+                RadialGradient(
+                    colors: [Color(hex: "34D399").opacity(0.15), .clear],
+                    center: .bottomTrailing,
+                    startRadius: 0,
+                    endRadius: 250
+                )
+            }
+        }
     }
 }
 
-// Extensión para Color desde Hex (necesaria aquí si no se hereda)
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (1, 1, 1, 0)
+// MARK: - Premium Button Component
+struct WidgetButton: View {
+    let intent: any AppIntent
+    let isActive: Bool
+    let startTime: Date?
+    let label: String
+    let icon: String
+    let activeColors: [Color]
+    
+    var body: some View {
+        Button(intent: intent) {
+            VStack(spacing: 6) {
+                // Icon Container
+                ZStack {
+                    if isActive {
+                        Circle()
+                            .fill(
+                                LinearGradient(colors: activeColors, startPoint: .topLeading, endPoint: .bottomTrailing)
+                            )
+                            .blur(radius: 8)
+                            .opacity(0.5)
+                    }
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(
+                            isActive ? 
+                            AnyGradient(gradient: LinearGradient(colors: [.white, .white.opacity(0.8)], startPoint: .top, endPoint: .bottom)) :
+                            AnyGradient(gradient: LinearGradient(colors: [.white.opacity(0.3), .white.opacity(0.3)], startPoint: .top, endPoint: .bottom))
+                        )
+                        .symbolEffect(.bounce, value: isActive)
+                }
+                .frame(height: 32)
+                
+                VStack(spacing: 1) {
+                    if isActive, let startTime = startTime {
+                        Text(startTime, style: .timer)
+                            .font(.system(size: 13, weight: .bold, design: .monospaced))
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    } else {
+                        Text(label)
+                            .font(.system(size: 11, weight: .semibold, design: .rounded))
+                            .foregroundColor(.white.opacity(isActive ? 1.0 : 0.4))
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background {
+                ZStack {
+                    // Glass effect
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(.white.opacity(isActive ? 0.15 : 0.05))
+                    
+                    // Glossy border
+                    RoundedRectangle(cornerRadius: 20)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [
+                                    .white.opacity(isActive ? 0.4 : 0.1),
+                                    .clear,
+                                    .white.opacity(isActive ? 0.1 : 0.05)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                }
+            }
         }
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue: Double(b) / 255,
-            opacity: Double(a) / 255
-        )
+        .buttonStyle(.plain)
     }
 }
+
+// Helper to handle any gradient (compatibility)
+struct AnyGradient: ShapeStyle {
+    let gradient: LinearGradient
+    func resolve(in proxy: EnvironmentValues) -> LinearGradient {
+        gradient
+    }
+}
+
 
 struct AnyelitoWidget: Widget {
     let kind: String = "AnyelitoWidget"

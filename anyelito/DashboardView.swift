@@ -365,8 +365,12 @@ struct FeedingActionButton: View {
             }
         }) {
             VStack(spacing: 12) {
+                let isPressed = viewModel.activeFeedingEvent != nil
+                if isPressed {
+                    let _ = print("🖥️ [UI] FeedingActionButton detectó ESTADO ACTIVO")
+                }
+                
                 ZStack {
-                    let isPressed = viewModel.activeFeedingEvent != nil
                     
                     // Background bear stamp
                     Image(systemName: AnimalType.bear.symbol)
@@ -425,7 +429,7 @@ enum AnimalType {
     var symbol: String {
         switch self {
         case .bear: return "teddybear.fill"
-        case .rabbit: return "rabbit.fill"
+        case .rabbit: return "hare.fill"
         case .cat: return "cat.fill"
         case .bird: return "bird.fill"
         }
@@ -477,8 +481,12 @@ struct SleepActionButton: View {
             }
         }) {
             VStack(spacing: 12) {
+                let isPressed = viewModel.activeSleepEvent != nil
+                if isPressed {
+                    let _ = print("🖥️ [UI] SleepActionButton detectó ESTADO ACTIVO")
+                }
+                
                 ZStack {
-                    let isPressed = viewModel.activeSleepEvent != nil
                     
                     // Background rabbit stamp
                     Image(systemName: AnimalType.rabbit.symbol)

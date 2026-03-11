@@ -4,9 +4,9 @@ import Combine
 import FirebaseFirestore
 import WidgetKit
 
-@Observable
+@Observable @MainActor
 final class BabyTrackerViewModel {
-    var modelContext: ModelContext
+    var modelContext: ModelContext { SharedActivityManager.shared.modelContext }
     var events: [TrackerEvent] = []
     var profiles: [BabyProfile] = []
     
@@ -65,8 +65,7 @@ final class BabyTrackerViewModel {
     private var profileListener: ListenerRegistration?
     private var eventsListener: ListenerRegistration?
     
-    init(modelContext: ModelContext) {
-        self.modelContext = modelContext
+    init() {
         fetchData()
         checkForActiveTimer()
         setupFirebase()
@@ -79,9 +78,14 @@ final class BabyTrackerViewModel {
                 print("Signed in anonymously to Firebase")
                 syncAllPendingData()
                 
-                // Start listeners if we have a baby
+                // Start listeners immediately if we have a baby
                 if let profile = profiles.first {
+                    print("🔄 [BabyTrackerViewModel] Priorizando listeners...")
                     startFirestoreListeners(for: profile.id.uuidString)
+                    
+                    print("🔄 [BabyTrackerViewModel] Iniciando sincronización manual...")
+                    await SharedActivityManager.shared.syncFromCloud()
+                    fetchData()
                 }
             } catch {
                 print("Firebase auth failed: \(error)")
@@ -137,18 +141,25 @@ final class BabyTrackerViewModel {
         eventsListener?.remove()
         
         profileListener = FirestoreService.shared.listenToProfile(forBabyId: babyId) { [weak self] data in
-            self?.updateProfileLocally(with: data)
+            Task { @MainActor in
+                print("👤 [ViewModel] Snapshot de PERFIL recibido")
+                self?.updateProfileLocally(with: data)
+            }
         }
         
         eventsListener = FirestoreService.shared.listenToEvents(forBabyId: babyId) { [weak self] eventsData in
-            self?.updateEventsLocally(with: eventsData)
+            Task { @MainActor in
+                print("📥 [ViewModel] Snapshot de EVENTOS recibido (\(eventsData.count) docs)")
+                self?.updateEventsLocally(with: eventsData)
+            }
         }
     }
     
     private func updateProfileLocally(with data: [String: Any]) {
         guard let idString = data["id"] as? String, let id = UUID(uuidString: idString) else { return }
         
-        if let localProfile = profiles.first(where: { $0.id == id }) {
+        let fetchDescriptor = FetchDescriptor<BabyProfile>(predicate: #Predicate { $0.id == id })
+        if let localProfile = (try? modelContext.fetch(fetchDescriptor))?.first {
             localProfile.name = data["name"] as? String ?? localProfile.name
             localProfile.birthDate = (data["birthDate"] as? Timestamp)?.dateValue() ?? localProfile.birthDate
             localProfile.birthWeight = data["birthWeight"] as? Double
@@ -158,44 +169,68 @@ final class BabyTrackerViewModel {
             
             try? modelContext.save()
             fetchData()
-            WidgetCenter.shared.reloadAllTimelines()
         }
     }
     
     private func updateEventsLocally(with eventsData: [[String: Any]]) {
+        print("🔄 [ViewModel] Sincronizando \(eventsData.count) eventos remotos...")
         let serverIds = Set(eventsData.compactMap { $0["id"] as? String })
         
-        // 1. Remove local events that are no longer on the server
-        for localEvent in events {
-            if !serverIds.contains(localEvent.id.uuidString) {
-                modelContext.delete(localEvent)
-            }
-        }
+        let fetchDescriptor = FetchDescriptor<TrackerEvent>()
+        guard let allLocalEvents = try? modelContext.fetch(fetchDescriptor) else { return }
         
-        // 2. Update or Insert
+        var hasChanges = false
+        
+        // 1. Update or Insert
         for data in eventsData {
             guard let idString = data["id"] as? String, let id = UUID(uuidString: idString) else { continue }
+            let type = data["type"] as? String ?? ""
+            let endTime = (data["endTime"] as? Timestamp)?.dateValue()
+            let startTime = (data["startTime"] as? Timestamp)?.dateValue() ?? Date()
             
-            if let localEvent = events.first(where: { $0.id == id }) {
-                // Update existing
-                localEvent.type = data["type"] as? String ?? localEvent.type
-                localEvent.startTime = (data["startTime"] as? Timestamp)?.dateValue() ?? localEvent.startTime
-                localEvent.endTime = (data["endTime"] as? Timestamp)?.dateValue()
-                localEvent.value = data["value"] as? Double
-                localEvent.subType = data["subType"] as? String
-                localEvent.notes = data["notes"] as? String
-                localEvent.isSynced = true // Ya está en la nube
+            if let localEvent = allLocalEvents.first(where: { $0.id == id }) {
+                // Update if changed
+                if localEvent.endTime != endTime || localEvent.startTime != startTime || localEvent.type != type {
+                    if localEvent.endTime == nil && endTime != nil {
+                        print("⏹️ [ViewModel] DESACTIVACIÓN remota detectada: \(type)")
+                    }
+                    localEvent.type = type
+                    localEvent.startTime = startTime
+                    localEvent.endTime = endTime
+                    localEvent.value = data["value"] as? Double
+                    localEvent.subType = data["subType"] as? String
+                    localEvent.notes = data["notes"] as? String
+                    localEvent.isSynced = true
+                    hasChanges = true
+                }
             } else {
                 // Insert new
                 if let newEvent = createEvent(from: data) {
-                    newEvent.isSynced = true // Ya está en la nube
+                    print("✨ [ViewModel] NUEVO evento remoto: \(type)")
+                    newEvent.isSynced = true
                     modelContext.insert(newEvent)
+                    hasChanges = true
                 }
             }
         }
-        try? modelContext.save()
-        fetchData()
-        WidgetCenter.shared.reloadAllTimelines()
+        
+        // 2. Cleanup local obsoletes
+        for localEvent in allLocalEvents {
+            if localEvent.isSynced && !serverIds.contains(localEvent.id.uuidString) {
+                print("🗑️ [ViewModel] Eliminando evento obsoleto: \(localEvent.type)")
+                modelContext.delete(localEvent)
+                hasChanges = true
+            }
+        }
+        
+        if hasChanges {
+            try? modelContext.save()
+            fetchData()
+            WidgetCenter.shared.reloadAllTimelines()
+            print("✅ [ViewModel] Cambios aplicados y UI refrescada")
+        } else {
+            print("😴 [ViewModel] No hay cambios relevantes en el snapshot")
+        }
     }
     
     private func createEvent(from data: [String: Any]) -> TrackerEvent? {
@@ -219,17 +254,24 @@ final class BabyTrackerViewModel {
             let profileDescriptor = FetchDescriptor<BabyProfile>()
             profiles = try modelContext.fetch(profileDescriptor)
             
-            // Sync timers after fetch
-            activeSleepEvent = events.first { $0.eventType == .sleep && $0.endTime == nil }
-            activeFeedingEvent = events.first { $0.eventType == .feeding && $0.endTime == nil }
+            print("📊 [ViewModel] Fetch completado. Total eventos: \(events.count)")
             
-            if activeSleepEvent != nil || activeFeedingEvent != nil {
+            // Sync timers after fetch
+            activeSleepEvent = events.first { $0.type == "Sueño" && $0.endTime == nil }
+            activeFeedingEvent = events.first { $0.type == "Toma" && $0.endTime == nil }
+            
+            if let feeding = activeFeedingEvent {
+                print("🍼 [ViewModel] TOMA ACTIVA: \(feeding.id.uuidString) iniciada a las \(feeding.startTime)")
+                startTimer()
+            } else if let sleep = activeSleepEvent {
+                print("🌙 [ViewModel] SUEÑO ACTIVO: \(sleep.id.uuidString) iniciado a las \(sleep.startTime)")
                 startTimer()
             } else {
+                print("⏹️ [ViewModel] No se detectaron timers activos")
                 stopTimer()
             }
         } catch {
-            print("Fetch failed")
+            print("Fetch failed: \(error)")
         }
     }
     

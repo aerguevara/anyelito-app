@@ -46,7 +46,7 @@ struct ContentView: View {
                 ProgressView()
                     .preferredColorScheme(.dark)
                     .onAppear {
-                        viewModel = BabyTrackerViewModel(modelContext: modelContext)
+                        viewModel = BabyTrackerViewModel()
                     }
             }
         }

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DA1649382F6220B6002CAB37 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = DA1649372F6220B6002CAB37 /* FirebaseAuth */; };
+		DA16493A2F6220C0002CAB37 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = DA1649392F6220C0002CAB37 /* FirebaseFirestore */; };
+		DA16493D2F62212D002CAB37 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = DA16493C2F62212D002CAB37 /* FirebaseCore */; };
 		DA6E5A4F2F5EE8B900AFCCD7 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA6E5A4E2F5EE8B900AFCCD7 /* WidgetKit.framework */; };
 		DA6E5A512F5EE8B900AFCCD7 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA6E5A502F5EE8B900AFCCD7 /* SwiftUI.framework */; };
 		DA6E5A622F5EE8BA00AFCCD7 /* AnyelitoWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DA6E5A4C2F5EE8B900AFCCD7 /* AnyelitoWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -75,8 +78,11 @@
 		DA6E5A6B2F5EF04900AFCCD7 /* Exceptions for "anyelito" folder in "AnyelitoWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				FirestoreService.swift,
+				"GoogleService-Info.plist",
 				Models.swift,
 				SharedActivityManager.swift,
+				Theme.swift,
 				WidgetIntents.swift,
 			);
 			target = DA6E5A4B2F5EE8B900AFCCD7 /* AnyelitoWidgetExtension */;
@@ -143,6 +149,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA6E5A512F5EE8B900AFCCD7 /* SwiftUI.framework in Frameworks */,
+				DA16493D2F62212D002CAB37 /* FirebaseCore in Frameworks */,
+				DA16493A2F6220C0002CAB37 /* FirebaseFirestore in Frameworks */,
+				DA1649382F6220B6002CAB37 /* FirebaseAuth in Frameworks */,
 				DA6E5A4F2F5EE8B900AFCCD7 /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -277,6 +286,9 @@
 			);
 			name = AnyelitoWidgetExtension;
 			packageProductDependencies = (
+				DA1649372F6220B6002CAB37 /* FirebaseAuth */,
+				DA1649392F6220C0002CAB37 /* FirebaseFirestore */,
+				DA16493C2F62212D002CAB37 /* FirebaseCore */,
 			);
 			productName = AnyelitoWidgetExtension;
 			productReference = DA6E5A4C2F5EE8B900AFCCD7 /* AnyelitoWidgetExtension.appex */;
@@ -823,6 +835,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		DA1649372F6220B6002CAB37 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA87460E2F362A6E004CBF58 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		DA1649392F6220C0002CAB37 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA87460E2F362A6E004CBF58 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		DA16493C2F62212D002CAB37 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DA87460E2F362A6E004CBF58 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
 		DA87460F2F362A6E004CBF58 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DA87460E2F362A6E004CBF58 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

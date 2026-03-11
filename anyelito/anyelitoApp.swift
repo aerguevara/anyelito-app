@@ -57,44 +57,12 @@ struct anyelitoApp: App {
         UITabBar.appearance().unselectedItemTintColor = UIColor.white.withAlphaComponent(0.7)
     }
 
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            BabyProfile.self,
-            TrackerEvent.self,
-        ])
-        
-        // Use App Group URL for shared SwiftData storage
-        let appGroupIdentifier = "group.com.anyelo.anyelito"
-        let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier)?
-            .appendingPathComponent("anyelito.sqlite")
-        
-        let modelConfiguration = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: false,
-            groupContainer: .identifier(appGroupIdentifier)
-        )
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            print("SwiftData migration failed: \(error). Attempting to reset store.")
-            
-            let currentUrl = modelConfiguration.url
-            try? FileManager.default.removeItem(atPath: currentUrl.path)
-            
-            do {
-                return try ModelContainer(for: schema, configurations: [modelConfiguration])
-            } catch {
-                fatalError("Could not create ModelContainer even after reset: \(error)")
-            }
-        }
-    }()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .preferredColorScheme(.dark)
+                .modelContainer(SharedActivityManager.shared.modelContainer)
         }
-        .modelContainer(sharedModelContainer)
     }
 }

@@ -7,7 +7,10 @@ struct ToggleFeedingIntent: AppIntent {
     
     @MainActor
     func perform() async throws -> some IntentResult {
+        print("🔘 [ToggleFeedingIntent] Ejecutando...")
         SharedActivityManager.shared.toggleFeeding()
+        // Damos un pequeño respiro para que el guardado local se complete
+        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s
         return .result()
     }
 }
@@ -18,7 +21,10 @@ struct ToggleSleepIntent: AppIntent {
     
     @MainActor
     func perform() async throws -> some IntentResult {
+        print("🔘 [ToggleSleepIntent] Ejecutando...")
         SharedActivityManager.shared.toggleSleep()
+        // Damos un pequeño respiro para que el guardado local se complete
+        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s
         return .result()
     }
 }
